@@ -963,7 +963,6 @@ export function getTextSelection(
 
   if (isNumber(pos)) {
     pos = clampToDocument(pos);
-
     return TextSelection.near(doc.resolve(pos));
   }
 

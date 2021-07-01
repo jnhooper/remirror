@@ -305,6 +305,14 @@
     "gzip": true
   },
   {
+    "name": "@remirror/extension-file",
+    "limit": "5 KB",
+    "path": "packages/remirror__extension-file/dist/remirror-extension-file.browser.esm.js",
+    "ignore": ["@remirror/pm", "@remirror/core", "@remirror/messages"],
+    "running": false,
+    "gzip": true
+  },
+  {
     "name": "@remirror/extension-font-family",
     "limit": "5 KB",
     "path": "packages/remirror__extension-font-family/dist/remirror-extension-font-family.browser.esm.js",
