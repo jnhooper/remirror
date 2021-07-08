@@ -3,10 +3,11 @@ import {
   command,
   CommandFunction,
   extension,
-  extensionDecorator,
   ExtensionPriority,
   ExtensionTag,
   findChildren,
+  findNodeAtPosition,
+  findParentNodeOfType,
   getTextSelection,
   NodeExtension,
   NodeExtensionSpec,
@@ -15,9 +16,11 @@ import {
   ProsemirrorNode,
   uniqueId,
 } from '@remirror/core';
+import { ResolvedPos } from '@remirror/pm/model';
 import { PasteRule } from '@remirror/pm/paste-rules';
+import { EditorState, Selection } from '@remirror/pm/state';
 
-import { FileView } from './file-view';
+import { DefaultFileView } from './file-view';
 
 export interface FileAttributes {
   id?: string;
@@ -26,10 +29,12 @@ export interface FileAttributes {
   fileName?: string;
   fileType?: string;
   fileSize?: number;
+  extraInfo?: any;
 }
 
 type UploadHandler = (file: File) => Promise<FileAttributes>;
 type PasteHandler = (file: File) => FileAttributes;
+type DeleteHandler = (file: File) => void;
 
 export async function defaultUploadHandler(file: File): Promise<FileAttributes> {
   const src = URL.createObjectURL(file);
@@ -57,12 +62,16 @@ export function defaultPasteHandler(file: File): FileAttributes {
 export interface FileOptions {
   uploadHandler?: UploadHandler;
   pasteHandler?: PasteHandler;
+  deleteHandler?: DeleteHandler;
+  renderFile: React.FC<NodeViewComponentProps>;
 }
 
 @extension<FileOptions>({
   defaultOptions: {
     uploadHandler: defaultUploadHandler,
     pasteHandler: defaultPasteHandler,
+    deleteHandler: () => {},
+    renderFile: DefaultFileView,
   },
 })
 export class FileExtension extends NodeExtension<FileOptions> {
@@ -70,7 +79,7 @@ export class FileExtension extends NodeExtension<FileOptions> {
     return 'file' as const;
   }
 
-  ReactComponent = FileView;
+  ReactComponent = DefaultFileView;
 
   createTags() {
     return [ExtensionTag.Block];
@@ -85,6 +94,7 @@ export class FileExtension extends NodeExtension<FileOptions> {
         fileName: { default: '' },
         fileType: { default: '' },
         fileSize: { default: '' },
+        extraInfo: { default: null },
       },
       ...override,
       selectable: true,
@@ -178,11 +188,6 @@ export class FileExtension extends NodeExtension<FileOptions> {
     return true;
   }
 
-  // @command()
-  // handleUpload(file: File) {
-  //   return this.options.uploadHandler(file);
-  // }
-
   @command()
   updateFile(pos: number, attrs: FileAttributes): CommandFunction {
     return ({ tr, dispatch }) => {
@@ -199,7 +204,43 @@ export class FileExtension extends NodeExtension<FileOptions> {
       return true;
     };
   }
+
+  @command()
+  deleteFile(pos: number): CommandFunction {
+    return ({ tr, state, dispatch }) => {
+      const node = state.doc.nodeAt(pos);
+
+      if (node && node.type === this.type) {
+        if (dispatch) {
+          dispatch(tr.delete(pos, pos + 1).scrollIntoView());
+        }
+
+        return true;
+      }
+
+      return false;
+    };
+  }
+
+  @command()
+  renameFile(pos: number, fileName: string): CommandFunction {
+    return ({ tr, state, dispatch }) => {
+      const node = state.doc.nodeAt(pos);
+
+      if (node && node.type === this.type) {
+        if (dispatch) {
+          dispatch(tr.setNodeMarkup(pos, undefined, { ...node.attrs, fileName }));
+        }
+
+        return true;
+      }
+
+      return false;
+    };
+  }
 }
+
+// type DeleteFileProps =
 
 declare global {
   namespace Remirror {

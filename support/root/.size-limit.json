@@ -306,9 +306,18 @@
   },
   {
     "name": "@remirror/extension-file",
-    "limit": "5 KB",
+    "limit": "30 KB",
     "path": "packages/remirror__extension-file/dist/remirror-extension-file.browser.esm.js",
-    "ignore": ["@remirror/pm", "@remirror/core", "@remirror/messages"],
+    "ignore": [
+      "@remirror/pm",
+      "@types/react",
+      "@types/react-dom",
+      "react",
+      "react-dom",
+      "@remirror/core",
+      "@remirror/messages",
+      "@remirror/react"
+    ],
     "running": false,
     "gzip": true
   },

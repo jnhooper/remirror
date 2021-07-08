@@ -225,6 +225,9 @@
       "path": "packages/remirror__extension-events/src"
     },
     {
+      "path": "packages/remirror__extension-file/__stories__"
+    },
+    {
       "path": "packages/remirror__extension-file/__tests__"
     },
     {
